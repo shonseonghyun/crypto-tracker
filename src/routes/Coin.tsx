@@ -4,6 +4,8 @@ import styled from "styled-components";
 import Price from "./Price";
 import Chart from "./Chart";
 import path from "path";
+import { useQuery } from "react-query";
+import { fetchCoinInfo,fetchCoinTickers } from "../api/CoinsApi";
 
 const Container = styled.div`
     padding: 0px 20px
@@ -30,6 +32,7 @@ const Overview = styled.div`
   padding: 10px 20px;
   border-radius: 10px;
 `;
+
 const OverviewItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -41,6 +44,7 @@ const OverviewItem = styled.div`
     margin-bottom: 5px;
   }
 `;
+
 const Description = styled.p`
   margin: 20px 0px;
 `;
@@ -73,8 +77,6 @@ interface CoinUrlParams{
 interface CoinStateParams{
     name: string;
 }
-
-
 
 interface IInfoData{
     id:string,
@@ -131,42 +133,16 @@ interface IPriceData{
 }
 
 function Coin(){
-    const [loading,setLoading] = useState(true);
-
     const {coinId} = useParams<CoinUrlParams>();
     const {state} = useLocation<CoinStateParams>();
-
-    const [info,setInfo] = useState<IInfoData>();
-    const [priceInfo, setpriceInfo] = useState<IPriceData>();
-
-    const priceMatch = useRouteMatch(`/:coinId/price`);
-    // const chartMatch = useRouteMatch(`/${coinId}/chart`);
-    const chartMatch = useRouteMatch(`/:coinId/chart`);
-
-    // Coins컴포넌트를 통하여 코인의 이름을 전달받기 때문에
-    // 만약 Coins컴포넌트를 거치지 않고 해당 url로 들어올 경우(ex.사용자가 직접 url입력) state엔 값을 받아오지 못한다..
-    // const coinName = state?.name || "Loading...";  
+    const priceMatch = useRouteMatch(`/${coinId}/price`);
+    const chartMatch = useRouteMatch(`/${coinId}/chart`);
     
-    //위 문제를 해결하고자 아래와 같이 변경
-    const coinName = state?.name ? state.name : loading ?  "Loading..." : info?.name;  
-    // const coinName = state? state.name : "Loading...";  
-
-    useEffect(()=>{
-        // fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-        // .then(response=>response.json())
-        // .then(json=>console.log(json))
-
-        (async ()=>{
-            //await : callApi가 끝나는 것을 기다리게 하는 명령어
-            const infoData =  await (await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)).json();
-            setInfo(infoData);
-            
-            const priceData =  await (await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)).json();
-            setpriceInfo(priceData);
-            
-            setLoading(false);
-        })();
-    },[]);
+    const {isLoading:infoLoading, data:infoData}  = useQuery<IInfoData>(["info",coinId],()=>fetchCoinInfo(coinId));
+    const {isLoading:tickersLoading,data:tickersData}  = useQuery<IPriceData>(["tickers",coinId],()=>fetchCoinInfo(coinId));
+    
+    const loading = infoLoading || tickersLoading; 
+    const coinName = state?.name ? state.name : loading ?  "Loading..." : infoData?.name;  
 
     return (
         <Container>
@@ -179,29 +155,29 @@ function Coin(){
                 <Overview>
                     <OverviewItem>
                         <span>Rank</span>
-                        <span>{info?.rank}</span>
+                        <span>{infoData?.rank}</span>
                     </OverviewItem> 
                     <OverviewItem>
                         <span>Symbol</span>
-                        <span>${info?.symbol}</span>
+                        <span>${infoData?.symbol}</span>
                     </OverviewItem>
                     <OverviewItem>
                         <span>Open Source</span>
-                        <span>{info?.open_source ? "Yes" : "No"}</span>
+                        <span>{infoData?.open_source ? "Yes" : "No"}</span>
                     </OverviewItem>
                 </Overview>
                 <Description>
-                         {info?.description}
+                         {infoData?.description}
                  </Description>
 
                  <Overview>
                     <OverviewItem>
                         <span>ToTAL SUPLY</span>
-                        <span>{priceInfo?.total_supply}</span>
+                        <span>{tickersData?.total_supply}</span>
                     </OverviewItem> 
                     <OverviewItem>
                         <span>MAX</span>
-                        <span>${priceInfo?.max_supply}</span>
+                        <span>${tickersData?.max_supply}</span>
                     </OverviewItem>
                 </Overview>
 
@@ -215,10 +191,10 @@ function Coin(){
                 </Tabs>
 
                 <Switch>
-                    <Route path={`/:coinId/price`} >
+                    <Route path={`/${coinId}/price`} >
                         <Price />
                     </Route>
-                    <Route path={`/:coinId/chart`} >
+                    <Route path={`/${coinId}/chart`} >
                         <Chart />
                     </Route>
                 </Switch>
