@@ -6,6 +6,7 @@ import Chart from "./Chart";
 import path from "path";
 import { useQuery } from "react-query";
 import { fetchCoinInfo,fetchCoinTickers } from "../api/CoinsApi";
+import {Helmet} from "react-helmet";
 
 const Container = styled.div`
     padding: 0px 20px
@@ -76,6 +77,7 @@ interface CoinUrlParams{
 
 interface CoinStateParams{
     name: string;
+    symbol:string;
 }
 
 interface IInfoData{
@@ -139,14 +141,23 @@ function Coin(){
     const chartMatch = useRouteMatch(`/${coinId}/chart`);
     
     const {isLoading:infoLoading, data:infoData}  = useQuery<IInfoData>(["info",coinId],()=>fetchCoinInfo(coinId));
-    const {isLoading:tickersLoading,data:tickersData}  = useQuery<IPriceData>(["tickers",coinId],()=>fetchCoinInfo(coinId));
+    const {isLoading:tickersLoading,data:tickersData}  = useQuery<IPriceData>(["tickers",coinId],()=>fetchCoinTickers(coinId)
+    // ,{
+    //     refetchInterval:5000,
+    // }
+    );
+
     
     const loading = infoLoading || tickersLoading; 
     const coinName = state?.name ? state.name : loading ?  "Loading..." : infoData?.name;  
-
+    const imgUrl = state?.symbol;
+    
     return (
         <Container>
-            <Header>{coinName}</Header> 
+            <Helmet>
+                <title>{coinName}</title>
+                <link rel="icon"  type="image/png" href={imgUrl} /> 
+            </Helmet>
             {/* 옵셔널 체이닝= https://ko.javascript.info/optional-chaining */}
             {loading
                 ? <Loader>Loading...</Loader>
@@ -162,8 +173,8 @@ function Coin(){
                         <span>${infoData?.symbol}</span>
                     </OverviewItem>
                     <OverviewItem>
-                        <span>Open Source</span>
-                        <span>{infoData?.open_source ? "Yes" : "No"}</span>
+                        <span>Price</span>
+                        <span>{tickersData?.quotes.USD.price}</span>
                     </OverviewItem>
                 </Overview>
                 <Description>
@@ -172,7 +183,7 @@ function Coin(){
 
                  <Overview>
                     <OverviewItem>
-                        <span>ToTAL SUPLY</span>
+                        <span>TOTAL SUPLY</span>
                         <span>{tickersData?.total_supply}</span>
                     </OverviewItem> 
                     <OverviewItem>
@@ -195,7 +206,7 @@ function Coin(){
                         <Price />
                     </Route>
                     <Route path={`/${coinId}/chart`} >
-                        <Chart />
+                        <Chart coinId={coinId}/>
                     </Route>
                 </Switch>
                 </>

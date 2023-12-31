@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { fetchCoins } from "../api/CoinsApi";
+import { Helmet } from "react-helmet";
+import { title } from "process";
 
 
 const Container = styled.div`
@@ -65,23 +67,30 @@ function Coins(){
 
     return (
         <Container>
-            <Header>코인</Header>
-            {isLoading ? <Loader>Loading...</Loader>:
-            <CoinList>
-                {data?.slice(0,100).map(coin=>
-                    <Coin key={coin.id}>
-                        <Link 
-                        to={{
-                            pathname:`/${coin.id}`, 
-                            state: { name:`${coin.name}`},
-                        }}
-                    >
-                            <Img src={`https://coinicons-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`} />
-                            {coin.name} &rarr; 
-                        </Link>
-                    </Coin>
-                )}
-            </CoinList>}
+            <Helmet>
+                <title>코인</title> 
+            </Helmet>           
+            {isLoading 
+            ? <Loader>Loading...</Loader>
+            : <CoinList>
+                    {data?.slice(0,100).map(coin=>
+                        <Coin key={coin.id}>
+                            <Link
+                                to={{
+                                    pathname:`/${coin.id}`, 
+                                    state: { 
+                                        name:`${coin.name}`,
+                                        symbol:`https://coinicons-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`,
+                                    },
+                                }}
+                            >
+                                <Img src={`https://coinicons-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`} />
+                                {coin.name} &rarr; 
+                            </Link>
+                        </Coin>
+                    )}
+                </CoinList>
+            }
         </Container>
     );
 }
