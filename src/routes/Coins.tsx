@@ -8,16 +8,16 @@ import { title } from "process";
 
 
 const Container = styled.div`
-    padding: 0px 20px
+    padding: 0px 2rem;
+    max-width: 30rem;
+    margin: 0px auto;
 `;
 
-const Header = styled.header`
-    font-size: 48px;
-    heigth:10vh;
+const Header = styled.h1`
+    heigth:8rem;
     display:flex;
     justify-content:center;
     align-items:center;
-    margin:10px;
 `;
 
 const Loader = styled.span`
@@ -25,12 +25,19 @@ const Loader = styled.span`
     display:block;
 `;
 
-const CoinList= styled.ul``;
+const CoinList= styled.ul`
+    display:flex;
+    gap:1rem;
+    flex-direction:column;
+`;
 const Coin = styled.li`
     background-color:white;
     color:${props=>props.theme.bgColor};
     margin-bottom:10px;
-    border-radius:15px;
+    min-height: 3.5rem;
+    border-radius: 0.7rem;
+    align-items:center;
+    box-shadow: rgba(10, 10, 10, 0.1) 0px 0.2rem 0.5rem;
 
     a {
         padding: 20px;
@@ -70,6 +77,7 @@ function Coins(){
             <Helmet>
                 <title>코인</title> 
             </Helmet>           
+            <Header>코인</Header>
             {isLoading 
             ? <Loader>Loading...</Loader>
             : <CoinList>

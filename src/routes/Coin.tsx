@@ -9,7 +9,9 @@ import { fetchCoinInfo,fetchCoinTickers } from "../api/CoinsApi";
 import {Helmet} from "react-helmet";
 
 const Container = styled.div`
-    padding: 0px 20px
+    padding: 0px 2rem;
+    max-width: 30rem;
+    margin: 0px auto;
 `;
 
 const Header = styled.header`
@@ -142,14 +144,13 @@ function Coin(){
     
     const {isLoading:infoLoading, data:infoData}  = useQuery<IInfoData>(["info",coinId],()=>fetchCoinInfo(coinId));
     const {isLoading:tickersLoading,data:tickersData}  = useQuery<IPriceData>(["tickers",coinId],()=>fetchCoinTickers(coinId)
-    // ,{
-    //     refetchInterval:5000,
-    // }
+    ,{
+        refetchInterval:5000,
+    }
     );
 
-    
     const loading = infoLoading || tickersLoading; 
-    const coinName = state?.name ? state.name : loading ?  "Loading..." : infoData?.name;  
+    const coinName = state?.name ? state.name : loading ? "Loading..." : infoData?.name;  
     const imgUrl = state?.symbol;
     
     return (
@@ -158,6 +159,10 @@ function Coin(){
                 <title>{coinName}</title>
                 <link rel="icon"  type="image/png" href={imgUrl} /> 
             </Helmet>
+                <Link to={"/"}>←</Link>
+                <Header>
+                    {coinName}
+                </Header>
             {/* 옵셔널 체이닝= https://ko.javascript.info/optional-chaining */}
             {loading
                 ? <Loader>Loading...</Loader>
